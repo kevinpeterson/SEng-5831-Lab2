@@ -1,14 +1,12 @@
 /**
  * A linked-list of callback functions.
  */
+#include <pololu/orangutan.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "command_parse.h"
-
-typedef struct CommandNode {
-	Command* command;
-	struct CommandNode* next;
-} CommandNode;
+#include "serial.h"
 
 CommandNode* command_list = NULL;
 
@@ -29,4 +27,31 @@ void add_command(Command* command) {
 		n->next = new_node;
 	}
 
+}
+
+CommandNode* get_all_commands() {
+	return command_list;
+}
+
+void _send_line_to_serial(char* line) {
+	serial_to_send(line, strlen(line));
+	serial_to_send("\r\n", 2);
+}
+
+void parse_command(char* command) {
+	CommandNode* n = command_list;
+	char c;
+	char args;
+	sscanf(command, "%c %s", &c, &args);
+	while(n != NULL) {
+		char cmd = n->command->command;
+		char alias = n->command->alias;
+		if(cmd == c || alias == c) {
+			n->command->command_function(&args, &_send_line_to_serial);
+			serial_to_send("\r\n", 2);
+			break;
+		} else {
+			n = n->next;
+		}
+	}
 }

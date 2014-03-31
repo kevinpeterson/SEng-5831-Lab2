@@ -1,4 +1,14 @@
 #include <avr/io.h>
+#include "command_parse.h"
+
+ParseResult _set_speed_function(char* params, void (*output_line)(char*));
+
+Command speed_command = {.command = 'S', .alias = 's',
+		.command_function = &_set_speed_function, .help = "Set the reference speed (counts/sec)" };
+
+ParseResult _set_speed_function(char* params, void (*output_line)(char*)) {
+	return COMMAND_PARSE_OK;
+}
 
 void _set_up_pwm() {
 
@@ -21,4 +31,5 @@ void _set_up_pwm() {
 
 void initialize_motor() {
 	_set_up_pwm();
+	add_command(&speed_command);
 }

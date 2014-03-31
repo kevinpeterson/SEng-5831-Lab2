@@ -3,16 +3,25 @@
  * http://docs.python.org/3.4/library/argparse.html
  */
 typedef enum {
-  OK = 0,
-  INVALID = 1
+  COMMAND_PARSE_OK = 0,
+  COMMAND_PARSE_INVALID = 1
 } ParseResult;
 
 typedef struct command_t {
-	uint16_t period;
-	ParseResult (*command_function)(char* params);
-	char* command;
+	ParseResult (*command_function)(char* params, void (*output_line)(char*));
+	char command;
+	char alias;
 	char* help;
 } Command;
 
+typedef struct CommandNode {
+	Command* command;
+	struct CommandNode* next;
+} CommandNode;
 
 void add_command(Command* command);
+
+CommandNode* get_all_commands();
+
+void parse_command(char* command);
+
