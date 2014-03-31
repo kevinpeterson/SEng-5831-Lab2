@@ -43,6 +43,7 @@ void print_welcome_message() {
 
 
 int main(void) {
+	//print("initializing");
 	initialize_scheduler();
 	initialize_serial();
 	initialize_command_line();

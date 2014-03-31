@@ -7,7 +7,10 @@
 
 #ifndef MOTOR_H_
 #define MOTOR_H_
+#include <inttypes.h>
 
 void initialize_motor();
+
+void set_motor_speed(uint8_t speed);
 
 #endif /* MOTOR_H_ */

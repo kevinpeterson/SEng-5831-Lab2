@@ -41,13 +41,13 @@ void _send_line_to_serial(char* line) {
 void parse_command(char* command) {
 	CommandNode* n = command_list;
 	char c;
-	char args;
-	sscanf(command, "%c %s", &c, &args);
+	char args[25];
+	sscanf(command, "%c %s", &c, args);
 	while(n != NULL) {
 		char cmd = n->command->command;
 		char alias = n->command->alias;
 		if(cmd == c || alias == c) {
-			n->command->command_function(&args, &_send_line_to_serial);
+			n->command->command_function(args, &_send_line_to_serial);
 			serial_to_send("\r\n", 2);
 			break;
 		} else {
