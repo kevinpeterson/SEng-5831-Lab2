@@ -7,11 +7,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <util/delay.h>
+
 
 #include "scheduler.h"
 #include "motor.h"
 #include "command_line.h"
 #include "serial.h"
+#include "logger.h"
+#include "motor_encoder.h"
 
 
 #ifdef WELCOME_MSG
@@ -43,10 +47,12 @@ void print_welcome_message() {
 
 
 int main(void) {
-	//print("initializing");
+	clear();
+
 	initialize_scheduler();
 	initialize_serial();
 	initialize_command_line();
+	initialize_motor_encoder();
 	initialize_motor();
 
 	sei();

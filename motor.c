@@ -34,7 +34,7 @@ void _set_up_pwm() {
     TCCR2B = _BV(CS22);
 
     // Start at 0 speed
-    OCR2B = 50;
+    OCR2B = 0;
 }
 
 void set_motor_speed(uint8_t speed) {
