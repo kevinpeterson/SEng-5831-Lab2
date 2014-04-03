@@ -15,7 +15,7 @@ LDFLAGS=-Wl,-gc-sections -lpololu_$(DEVICE) -Wl,-relax
 AVRDUDE=avrdude
 
 TARGET=lab2
-OBJECT_FILES=$(TARGET).o motor.o scheduler.o command_parse.o command_line.o serial.o motor_encoder.o logger.o
+OBJECT_FILES=$(TARGET).o motor.o scheduler.o command_parse.o command_line.o serial.o motor_encoder.o logger.o pd_controller.o
 
 all: $(TARGET).hex
 

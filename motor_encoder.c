@@ -11,7 +11,6 @@
 #include "serial.h"
 #include "logger.h"
 
-
 volatile int32_t wheel_counter = 0;
 
 uint8_t pcint_mask = _BV(0) | _BV(1);
@@ -39,7 +38,7 @@ ISR(PCINT0_vect) {
 #if LOG_LEVEL == DEBUG
 		char c[20];
 		sprintf(c, "Wheel: %d", (int)wheel_counter);
-		log_msg(c, DEBUG);
+		//log_msg(c, DEBUG);
 #endif
 
 	uint8_t changed = (last_pina ^ (PINA & pcint_mask));

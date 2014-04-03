@@ -1,22 +1,8 @@
 #include <pololu/orangutan.h>
 #include <avr/io.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <inttypes.h>
 #include "command_parse.h"
 #include "motor.h"
-
-ParseResult _set_speed_function(char* params, void (*output_line)(char*));
-
-Command speed_command = {.command = 'S', .alias = 's',
-		.command_function = &_set_speed_function, .help = "Set the reference speed (counts/sec)" };
-
-ParseResult _set_speed_function(char* params, void (*output_line)(char*)) {
-	int i;
-	sscanf(params, "%d", &i);
-	set_motor_speed(i);
-	return COMMAND_PARSE_OK;
-}
 
 void _set_up_pwm() {
 
@@ -43,5 +29,4 @@ void set_motor_speed(uint8_t speed) {
 
 void initialize_motor() {
 	_set_up_pwm();
-	add_command(&speed_command);
 }

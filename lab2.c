@@ -16,6 +16,7 @@
 #include "serial.h"
 #include "logger.h"
 #include "motor_encoder.h"
+#include "pd_controller.h"
 
 
 #ifdef WELCOME_MSG
@@ -54,6 +55,7 @@ int main(void) {
 	initialize_command_line();
 	initialize_motor_encoder();
 	initialize_motor();
+	initialize_pd_controller();
 
 	sei();
 
