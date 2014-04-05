@@ -7,7 +7,7 @@
 /**
  * The current level of information to log.
  */
-#define LOG_LEVEL DEBUG
+#define LOG_LEVEL INFO
 
 typedef enum {
   DEBUG = 0,

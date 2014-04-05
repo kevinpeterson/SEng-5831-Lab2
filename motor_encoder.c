@@ -35,11 +35,11 @@ void initialize_motor_encoder() {
 }
 
 ISR(PCINT0_vect) {
-#if LOG_LEVEL == DEBUG
+//#if LOG_LEVEL == DEBUG
 		char c[20];
 		sprintf(c, "Wheel: %d", (int)wheel_counter);
-		//log_msg(c, DEBUG);
-#endif
+		log_msg(c, INFO);
+//#endif
 
 	uint8_t changed = (last_pina ^ (PINA & pcint_mask));
 
