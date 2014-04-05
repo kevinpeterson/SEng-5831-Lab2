@@ -27,7 +27,7 @@ ParseResult help_function(char* params, void (*output_line)(char*)) {
 		char alias = n->command->alias;
 		char* msg = n->command->help;
 
-		char buffer[50];
+		char buffer[100];
 		if(! alias) {
 			sprintf(buffer, "%c - %s", cmd, msg);
 		} else {

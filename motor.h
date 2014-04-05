@@ -11,6 +11,6 @@
 
 void initialize_motor();
 
-void set_motor_speed(uint8_t speed);
+void set_motor_speed(int16_t speed);
 
 #endif /* MOTOR_H_ */

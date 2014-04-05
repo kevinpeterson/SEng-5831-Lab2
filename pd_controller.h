@@ -10,6 +10,6 @@
 
 void initialize_pd_controller();
 
-void set_speed(uint8_t desired_speed_Pr);
+void set_speed(int16_t desired_speed_Pr);
 
 #endif /* PD_CONTROLLER_H_ */

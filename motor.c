@@ -1,5 +1,7 @@
 #include <pololu/orangutan.h>
 #include <avr/io.h>
+#include <stdlib.h>
+#include <stdio.h>
 #include <inttypes.h>
 #include "command_parse.h"
 #include "motor.h"
@@ -20,11 +22,17 @@ void _set_up_pwm() {
     TCCR2B = _BV(CS22);
 
     // Start at 0 speed
+    OCR2A = 0;
     OCR2B = 0;
 }
 
-void set_motor_speed(uint8_t speed) {
-	OCR2B = speed;
+void set_motor_speed(int16_t speed) {
+	if(speed >= 0) {
+		PORTC &= ~_BV(6);
+	} else {
+		PORTC |= _BV(6);
+	}
+	OCR2B = abs(speed);
 }
 
 void initialize_motor() {
