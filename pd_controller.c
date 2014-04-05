@@ -62,7 +62,7 @@ Command set_kd_command = {.command = 'D', .alias = 'd',
 Command view_current_values_command = {.command = 'V', .alias = 'v',
 		.command_function = &_view_current_values_function, .help = "View the current values Kd, Kp, Vm, Pr, Pm, and T" };
 
-volatile Task pd_controller_task = { .period = 1, .interrupt_function =
+volatile Task pd_controller_task = { .period = 20, .interrupt_function =
 		&_pd_controller_cycle, .released = 0, .name = "Cycle the PD Controller Task" };
 
 volatile Task sample_motor_position_task = { .period = 10, .interrupt_function =
@@ -108,8 +108,16 @@ void set_speed(int16_t speed) {
 	desired_speed = speed;
 }
 
+uint8_t _normalize_position(uint8_t position) {
+	if(position > 127) {
+		position = 127;
+	}
+
+	return position;
+}
+
 void set_position(uint8_t position) {
-	desired_position = position;
+	desired_position = _normalize_position(position);
 }
 
 void set_proportional_gain(uint8_t gain) {
@@ -166,7 +174,7 @@ void _sample_motor_speed() {
 
 	cli();
 	previous_velocity = current_velocity;
-	current_velocity = diff * 10;
+	current_velocity = diff;
 	sei();
 }
 
@@ -180,7 +188,7 @@ void _calculate_position_torque() {
 
 #if 1
 	char c[24];
-	sprintf(c, "T: %d", _torque);
+	sprintf(c, "Pos T: %d", _torque);
 	log_msg(c, DEBUG);
 #endif
 
@@ -195,9 +203,9 @@ void _calculate_speed_torque() {
 
 	_torque = _normalize_torque(_torque);
 
-#if 1
+#if 0
 	char c[24];
-	sprintf(c, "T: %d", _torque);
+	sprintf(c, "Sp T: %d", _torque);
 	log_msg(c, DEBUG);
 #endif
 
