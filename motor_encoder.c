@@ -21,6 +21,10 @@ volatile uint8_t last_changed;
 
 volatile char reversed = 0;
 
+unsigned long prev_ticks = 0;
+
+volatile double velocity;
+
 void initialize_motor_encoder() {
 	//make port A as input
 	DDRA &= ~pcint_mask;
@@ -35,9 +39,10 @@ void initialize_motor_encoder() {
 }
 
 ISR(PCINT0_vect) {
+
 #if 0
 	char c[20];
-	sprintf(c, "Wheel: %d", (int)wheel_counter);
+	sprintf(c, "Wheel Cnt: %d", (int)wheel_counter);
 	log_msg(c, DEBUG);
 #endif
 
@@ -52,6 +57,24 @@ ISR(PCINT0_vect) {
 	} else {
 		wheel_counter++;
 	}
+/*
+	if(! reversed) {
+		unsigned long ticks = get_ticks();
+		unsigned long elapsed_time_us = ticks_to_microseconds(ticks - prev_ticks);
+		prev_ticks = ticks;
+
+		velocity = ((long) 1 * 1000 * 1000) / (elapsed_time_us);
+	} else {
+		prev_ticks = ticks_to_microseconds( get_ticks() );
+		velocity = 0;
+	}
+
+#if 1
+	char c[20];
+	sprintf(c, "W V: %8.6f", velocity);
+	log_msg(c, DEBUG);
+#endif
+*/
 
 	last_changed = changed;
 	last_pina = (PINA & pcint_mask);

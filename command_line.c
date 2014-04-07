@@ -40,7 +40,7 @@ ParseResult help_function(char* params, void (*output_line)(char*)) {
 }
 
 void _print_command_prompt() {
-	serial_to_send("\r\n>: ", 5);
+	serial_to_send("\n>: ", 5);
 }
 
 void process_command(char* buffer) {

@@ -59,7 +59,14 @@ int main(void) {
 
 	sei();
 
+	print("Starting...");
+	delay_ms(500);
+	clear();
 	while(1) {
+		//set_m2_speed(-100);
+		//delay_ms(1000);
+		//set_m2_speed(-255);
+		//delay_ms(1000);
 		release_ready_tasks();
 	}
 

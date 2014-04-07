@@ -29,11 +29,18 @@ typedef enum {
   POSITION_MODE = 2
 } ControllerMode;
 
+typedef enum {
+  CSV_MODE = 1,
+  PRINT_MODE = 2
+} LogMode;
+
 volatile ControllerMode controller_mode;
+volatile LogMode log_mode;
 
 void _pd_controller_cycle();
 void _calculate_avg_motor_speed();
 void _sample_motor_speed();
+void _sample_motor_velocity();
 void _log_status();
 
 ParseResult _set_speed_function(char* params, void (*output_line)(char*));
@@ -65,14 +72,14 @@ Command view_current_values_command = {.command = 'V', .alias = 'v',
 volatile Task pd_controller_task = { .period = 20, .interrupt_function =
 		&_pd_controller_cycle, .released = 0, .name = "Cycle the PD Controller Task" };
 
-volatile Task sample_motor_position_task = { .period = 10, .interrupt_function =
-		&_sample_motor_speed, .released = 0, .name = "Sample Motor Position" };
+volatile Task sample_motor_velocity_task = { .period = 50, .interrupt_function =
+		&_sample_motor_velocity, .released = 0, .name = "Sample Motor Velocity" };
 
 volatile Task log_status = { .period = 5, .interrupt_function =
 		&_log_status, .released = 0, .name = "Log the status of Pr, Pm, and T" };
 
-volatile uint8_t proportional_gain = 1;
-volatile uint8_t derivative_gain = 1;
+volatile double proportional_gain = 0.2;
+volatile double derivative_gain = 0.2;
 
 volatile int16_t desired_speed = 0;
 volatile uint8_t desired_position = 0;
@@ -80,7 +87,10 @@ volatile uint8_t desired_position = 0;
 volatile int16_t previous_velocity;
 volatile int16_t current_velocity;
 
-volatile int32_t motor_position_samples[20] = {0};
+#define VELOCITY_AVG_COUNT 3
+volatile int32_t velocity_ring_buffer[VELOCITY_AVG_COUNT] = {0};
+
+volatile int32_t motor_current_count_previous = 0;
 
 volatile char is_logging = 0;
 
@@ -88,8 +98,8 @@ volatile int16_t torque;
 
 void initialize_pd_controller() {
 	register_task(&pd_controller_task);
-	register_task(&sample_motor_position_task);
 	register_task(&log_status);
+	register_task(&sample_motor_velocity_task);
 
 	add_command(&speed_command);
 	add_command(&position_command);
@@ -101,6 +111,15 @@ void initialize_pd_controller() {
 
 ParseResult _toggle_logging_function(char* params, void (*output_line)(char*)) {
 	is_logging = ~is_logging;
+	if(is_logging) {
+		char c;
+		sscanf(params, "%c", &c);
+		if(c == ',') {
+			log_mode = CSV_MODE;
+		} else {
+			log_mode = PRINT_MODE;
+		}
+	}
 	return COMMAND_PARSE_OK;
 }
 
@@ -149,34 +168,6 @@ int32_t _sample_motor_position() {
 	return get_encoder_count() % 128;
 }
 
-void _sample_motor_speed() {
-	int32_t current_motor_position = get_encoder_count();
-
-	int32_t tmp_samples[10] = {0};
-
-	int i;
-	for(i = 1;i < 10;i++) {
-		tmp_samples[i] = motor_position_samples[i - 1];
-	}
-	tmp_samples[0] = current_motor_position;
-
-	int32_t diff = (tmp_samples[0] - tmp_samples[9]);
-
-#if 0
-		char c[24];
-		sprintf(c, "V: %d", (int)diff * 10);
-		log_msg(c, DEBUG);
-#endif
-
-	for(i = 0;i < 10;i++) {
-		motor_position_samples[i] = tmp_samples[i];
-	}
-
-	cli();
-	previous_velocity = current_velocity;
-	current_velocity = diff;
-	sei();
-}
 
 /**
  * T = Kp(Pr - Pm) - Kd*Vm where
@@ -186,13 +177,13 @@ void _calculate_position_torque() {
 
 	_torque = _normalize_torque(_torque);
 
-#if 1
+#if 0
 	char c[24];
 	sprintf(c, "Pos T: %d", _torque);
 	log_msg(c, DEBUG);
 #endif
 
-	torque = _torque;
+	torque = _normalize_torque(torque + _torque);;
 }
 
 /**
@@ -209,7 +200,7 @@ void _calculate_speed_torque() {
 	log_msg(c, DEBUG);
 #endif
 
-	torque = _torque;
+	torque = _normalize_torque(torque + _torque);
 }
 
 
@@ -253,23 +244,75 @@ ParseResult _set_position_function(char* params, void (*output_line)(char*)) {
  */
 void _log_status() {
 	if(is_logging) {
-		char output_line[50];
-		int len = sprintf(output_line, "Pr: %d, Pm`: %d, Pm: %d, T: %d\r\n", desired_speed, previous_velocity, current_velocity, torque);
+		char* template;
+		if(log_mode == CSV_MODE) {
+			template = "%d,%d,%d,%d,%d\r\n";
+		} else if(log_mode == PRINT_MODE) {
+			template = "Pr: %d, Pm: %d, Vr %d, Vm: %d, T: %d\r\n";
+		} else {
+			log_msg("Error parsing log status.", ERROR);
+		}
+		char output_line[75];
+		int len = sprintf(output_line, template,
+				desired_position,
+				(int)_sample_motor_position(),
+				desired_speed,
+				current_velocity,
+				torque);
 		serial_to_send(output_line, len);
 	}
 }
 
-ParseResult _set_kp_function(char* params, void (*output_line)(char*)) {
+void _sample_motor_velocity() {
+	int32_t current_count = get_encoder_count();
+
 	int i;
-	sscanf(params, "%d", &i);
-	proportional_gain = i;
+	for(i = 1;i < VELOCITY_AVG_COUNT;i++) {
+		velocity_ring_buffer[i-1] = velocity_ring_buffer[i];
+	}
+	int16_t current_velocity_ = ( (current_count - motor_current_count_previous) * 20 );
+
+	velocity_ring_buffer[VELOCITY_AVG_COUNT - 1] = current_velocity_;
+
+	int velocity_sum = 0;
+	for(i = 0;i < VELOCITY_AVG_COUNT;i++) {
+		velocity_sum += velocity_ring_buffer[i];
+	}
+
+	previous_velocity = current_velocity;
+	current_velocity = velocity_sum / VELOCITY_AVG_COUNT;
+
+	motor_current_count_previous = current_count;
+#if 0
+	char c[20];
+	sprintf(c, "V: %d", current_velocity);
+	log_msg(c, DEBUG);
+#endif
+}
+
+ParseResult _set_kp_function(char* params, void (*output_line)(char*)) {
+	char c;
+	sscanf(params, "%c", &c);
+	if(c == '+') {
+		proportional_gain += 0.1;
+	} else if(c == '-') {
+		proportional_gain -= 0.1;
+	} else {
+		return COMMAND_PARSE_INVALID;
+	}
 	return COMMAND_PARSE_OK;
 }
 
 ParseResult _set_kd_function(char* params, void (*output_line)(char*)) {
-	int i;
-	sscanf(params, "%d", &i);
-	derivative_gain = i;
+	char c;
+	sscanf(params, "%c", &c);
+	if(c == '+') {
+		derivative_gain += 0.1;
+	} else if(c == '-') {
+		derivative_gain -= 0.1;
+	} else {
+		return COMMAND_PARSE_INVALID;
+	}
 	return COMMAND_PARSE_OK;
 }
 
@@ -278,7 +321,7 @@ ParseResult _set_kd_function(char* params, void (*output_line)(char*)) {
  */
 ParseResult _view_current_values_function(char* params, void (*output_line)(char*)) {
 	char output_buffer[100];
-	sprintf(output_buffer, "Kd: %d, Kp: %d, Vr: %d, Vm: %d, Pr: %d, Pm: %d, T: %d\r\n",
+	sprintf(output_buffer, "Kd: %f, Kp: %f, Vr: %d, Vm: %d, Pr: %d, Pm: %d, T: %d\r\n",
 			derivative_gain,
 			proportional_gain,
 			desired_speed,

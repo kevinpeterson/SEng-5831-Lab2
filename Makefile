@@ -10,7 +10,7 @@ CFLAGS=-g -Wall -mcall-prologues -DF_CPU=20000UL -mmcu=$(MCU) $(DEVICE_SPECIFIC_
 CC=avr-gcc
 AS=avr-as
 OBJ2HEX=avr-objcopy
-LDFLAGS=-Wl,-gc-sections -lpololu_$(DEVICE) -Wl,-relax
+LDFLAGS=-Wl,-gc-sections -lpololu_$(DEVICE) -Wl,-relax -Wl,-u,vfprintf -lprintf_flt -lm
 
 AVRDUDE=avrdude
 
