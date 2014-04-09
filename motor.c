@@ -25,7 +25,7 @@ void _set_up_pwm() {
     TCCR2A |= _BV(WGM21) | _BV(WGM20);
 
     // CPU/64 prescalar
-    TCCR2B = _BV(CS22);
+    TCCR2B = _BV(CS21);
 
     // Start at 0 speed
     OCR2A = 0;

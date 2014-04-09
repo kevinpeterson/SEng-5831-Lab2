@@ -13,9 +13,15 @@
 #include "serial.h"
 
 ParseResult help_function(char* params, void (*output_line)(char*));
+ParseResult _toggle_echo_back_function();
 
 Command help_command = {.command = 'h',
 		.command_function = &help_function, .help = "Display the help menu." };
+
+Command echo_back_command = {.command = 'e',
+		.command_function = &_toggle_echo_back_function, .help = "Toggle serial echo back." };
+
+static volatile char echo_back = 1;
 
 unsigned char command_buffer_position;
 char command_buffer[32];
@@ -40,7 +46,9 @@ ParseResult help_function(char* params, void (*output_line)(char*)) {
 }
 
 void _print_command_prompt() {
-	serial_to_send("\n>: ", 5);
+	if(echo_back) {
+		serial_to_send("\n>: ", 5);
+	}
 }
 
 void process_command(char* buffer) {
@@ -62,4 +70,20 @@ void initialize_command_line() {
 	register_incoming_callback(&_build_command_buffer);
 	_print_command_prompt();
 	add_command(&help_command);
+	add_command(&echo_back_command);
+}
+
+
+ParseResult _toggle_echo_back_function(char* params, void (*output_line)(char*)) {
+	char c;
+	sscanf(params, "%c", &c);
+	if(c == '+') {
+		echo_back = 1;
+	} else if(c == '-') {
+		echo_back = 0;
+	} else {
+		echo_back = !echo_back;
+	}
+    set_echo_back(echo_back);
+    return COMMAND_PARSE_OK;
 }

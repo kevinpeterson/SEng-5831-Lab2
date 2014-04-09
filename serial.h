@@ -21,5 +21,6 @@ void serial_to_send( char *buffer, int n );
  */
 void register_incoming_callback(void (*callback)(char c));
 
+void set_echo_back(char echo);
 
 #endif /* SERIAL_H_ */

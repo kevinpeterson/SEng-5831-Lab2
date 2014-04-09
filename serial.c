@@ -5,9 +5,12 @@
 #include <string.h>
 #include <stdlib.h>
 #include "scheduler.h"
+#include "command_parse.h"
 
 void check_for_new_bytes_received();
 void _monitor_serial();
+
+static volatile char echo_back = 1;
 
 /**
  * The serial monitoring task to be scheduled.
@@ -112,7 +115,9 @@ void check_for_new_bytes_received() {
 	// them into the menuBuffer
 	while(serial_get_received_bytes(USB_COMM) != receive_buffer_position)
 	{
-		serial_to_send(&receive_buffer[receive_buffer_position], 1);
+	    if(echo_back) {
+		    serial_to_send(&receive_buffer[receive_buffer_position], 1);
+		}
 
 		CallbackFn* fn = callback_list;
 		while(fn != NULL) {
@@ -129,4 +134,8 @@ void check_for_new_bytes_received() {
 			receive_buffer_position++;
 		}
 	}
+}
+
+void set_echo_back(char echo) {
+	echo_back = echo;
 }

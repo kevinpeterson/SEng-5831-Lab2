@@ -39,3 +39,6 @@
 # Intellij
 *.iml
 .idea/
+
+# PDFs
+figures.pdf

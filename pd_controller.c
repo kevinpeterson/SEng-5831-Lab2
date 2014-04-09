@@ -49,7 +49,7 @@ ParseResult _toggle_logging_function(char* params, void (*output_line)(char*));
 ParseResult _set_kp_function(char* params, void (*output_line)(char*));
 ParseResult _set_kd_function(char* params, void (*output_line)(char*));
 ParseResult _view_current_values_function(char* params, void (*output_line)(char*));
-
+ParseResult _set_pd_frequency_function(char* params, void (*output_line)(char*));
 
 Command speed_command = {.command = 'S', .alias = 's',
 		.command_function = &_set_speed_function, .help = "Set the reference speed (counts/sec)" };
@@ -68,6 +68,9 @@ Command set_kd_command = {.command = 'D', .alias = 'd',
 
 Command view_current_values_command = {.command = 'V', .alias = 'v',
 		.command_function = &_view_current_values_function, .help = "View the current values Kd, Kp, Vm, Pr, Pm, and T" };
+
+Command set_pd_frequency_command = {.command = 'F', .alias = 'f',
+		.command_function = &_set_pd_frequency_function, .help = "Set the PD Controller frequency (in ms period)" };
 
 volatile Task pd_controller_task = { .period = 20, .interrupt_function =
 		&_pd_controller_cycle, .released = 0, .name = "Cycle the PD Controller Task" };
@@ -107,6 +110,7 @@ void initialize_pd_controller() {
 	add_command(&set_kp_command);
 	add_command(&set_kd_command);
 	add_command(&view_current_values_command);
+	add_command(&set_pd_frequency_command);
 }
 
 ParseResult _toggle_logging_function(char* params, void (*output_line)(char*)) {
@@ -291,28 +295,12 @@ void _sample_motor_velocity() {
 }
 
 ParseResult _set_kp_function(char* params, void (*output_line)(char*)) {
-	char c;
-	sscanf(params, "%c", &c);
-	if(c == '+') {
-		proportional_gain += 0.1;
-	} else if(c == '-') {
-		proportional_gain -= 0.1;
-	} else {
-		return COMMAND_PARSE_INVALID;
-	}
+	proportional_gain = atof(params);
 	return COMMAND_PARSE_OK;
 }
 
 ParseResult _set_kd_function(char* params, void (*output_line)(char*)) {
-	char c;
-	sscanf(params, "%c", &c);
-	if(c == '+') {
-		derivative_gain += 0.1;
-	} else if(c == '-') {
-		derivative_gain -= 0.1;
-	} else {
-		return COMMAND_PARSE_INVALID;
-	}
+	derivative_gain = atof(params);
 	return COMMAND_PARSE_OK;
 }
 
@@ -331,4 +319,11 @@ ParseResult _view_current_values_function(char* params, void (*output_line)(char
 			torque);
 	output_line(output_buffer);
 	return COMMAND_PARSE_OK;
+}
+
+ParseResult _set_pd_frequency_function(char* params, void (*output_line)(char*)) {
+    int i;
+	sscanf(params, "%d", &i);
+	set_pd_controller_hz(i);
+    return COMMAND_PARSE_OK;
 }
