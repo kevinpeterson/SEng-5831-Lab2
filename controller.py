@@ -8,7 +8,7 @@ ser = serial.Serial('/dev/tty.usbmodem00055903', 9600)
 print("connected to: " + ser.portstr)
 
 def flush_input():
-    time.sleep(1)
+    time.sleep(1.0)
     ser.flushInput()
 
 def _send_command(command):
@@ -62,38 +62,47 @@ def record_speed(speed):
     return buffer
 
 
-def plot_position_traverse(buffer, params):
+def plot_position_traverse(buffer, params, position):
+    print buffer
     Pr = [l.split(",")[0] for l in buffer]
     Pm = [l.split(",")[1] for l in buffer]
-    T = [l.split(",")[4] for l in buffer]
+    Vm = [l.split(",")[4] for l in buffer]
 
     fig = plt.figure()
-    plt.plot(Pr)
-    plt.plot(Pm)
-    plt.plot(T)
+    plt.plot(Pr, label="Reference Position")
+    plt.plot(Pm, label="Measured Position")
+    plt.plot(Vm, label="Velocity")
     plt.xlabel("Time (x5 ms)")
     plt.ylabel("Position (counts)")
+    plt.legend()
     plt.title("Kp: %(Kp)s, Kd: %(Kd)s, Controller Period(ms): %(F)s" % params)
+    plt.ylim([0,position+20])
+    filename = "output/Kp%(Kp)sKd%(Kd)sF%(F)s" % params
+
+    plt.savefig(filename + "P" + str(position) + ".png")
 
     pp.savefig(fig)
+    plt.close(fig)
 
 
-def plot_speed(buffer, params):
+def plot_speed(buffer, params, speed):
     print buffer
-    Pr = [l.split(",")[2] for l in buffer]
-    Pm = [l.split(",")[3] for l in buffer]
-    T = [l.split(",")[4] for l in buffer]
+    Sr = [l.split(",")[2] for l in buffer]
+    Sm = [l.split(",")[3] for l in buffer]
 
     fig = plt.figure()
-    plt.plot(Pr)
-    plt.plot(Pm)
-    plt.plot(T)
+    plt.plot(Sr, label="Reference Speed")
+    plt.plot(Sm, label="Measured Speed")
     plt.xlabel("Time (x5 ms)")
     plt.ylabel("Speed (counts/sec)")
+    plt.legend()
     plt.title("Kp: %(Kp)s, Kd: %(Kd)s, Controller Period(ms): %(F)s" % params)
+    filename = "output/Kp%(Kp)sKd%(Kd)sF%(F)s" % params
+
+    plt.savefig(filename + "S" + str(speed) + ".png")
 
     pp.savefig(fig)
-    fig.close()
+    plt.close(fig)
 
 def set_params(Kp, Kd, F):
     _send_command('p'+str(Kp))
@@ -106,20 +115,47 @@ flush_input()
 
 pp = PdfPages('figures.pdf')
 
+"""
+params = {"F": 50, "Kp": 5.0, "Kd": 5.0}
+set_params(**params)
+plot_speed(record_speed(255), params, 255)
 
-for k in [0.1,0.15,0.2,0.25,0.3]:
-    params = {
-        "F": 20,
-        "Kp": k,
-        "Kd": k
-    }
-    set_params(**params)
-    plot_speed(record_speed(20), params)
-    plot_speed(record_speed(80), params)
-    plot_speed(record_speed(140), params)
-    plot_speed(record_speed(200), params)
-    plot_speed(record_speed(255), params)
+params = {"F": 50, "Kp": 5.0, "Kd": 5.0}
+set_params(**params)
+plot_speed(record_speed(20), params, 20)
 
+params = {"F": 50, "Kp": 0.1, "Kd": 0.1}
+set_params(**params)
+plot_speed(record_speed(20), params, 20)
+
+params = {"F": 50, "Kp": 0.5, "Kd": 0.5}
+set_params(**params)
+plot_speed(record_speed(120), params, 120)
+
+params = {"F": 50, "Kp": 0.2, "Kd": 0.2}
+set_params(**params)
+plot_speed(record_speed(120), params, 120)
+
+params = {"F": 50, "Kp": 0.2, "Kd": 0.2}
+set_params(**params)
+plot_position_traverse(record_position_traverse(50), params, 50)
+
+params = {"F": 50, "Kp": 0.2, "Kd": 0.2}
+set_params(**params)
+plot_position_traverse(record_position_traverse(50), params, 50)
+
+params = {"F": 20, "Kp": 0.4, "Kd": 0.1}
+set_params(**params)
+plot_position_traverse(record_position_traverse(50), params, 50)
+
+params = {"F": 20, "Kp": 0.5, "Kd": 0.1}
+set_params(**params)
+plot_position_traverse(record_position_traverse(50), params, 50)
+
+params = {"F": 20, "Kp": 0.15, "Kd": 0.15}
+set_params(**params)
+plot_position_traverse(record_position_traverse(50), params, 50)
+"""
 
 pp.close()
 
