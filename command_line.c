@@ -45,7 +45,7 @@ ParseResult help_function(char* params, void (*output_line)(char*)) {
 	return COMMAND_PARSE_OK;
 }
 
-void _print_command_prompt() {
+void print_command_prompt() {
 	if(echo_back) {
 		serial_to_send("\n>: ", 5);
 	}
@@ -53,7 +53,7 @@ void _print_command_prompt() {
 
 void process_command(char* buffer) {
 	parse_command(buffer);
-	_print_command_prompt();
+	print_command_prompt();
 }
 
 void _build_command_buffer(char c) {
@@ -68,7 +68,7 @@ void _build_command_buffer(char c) {
 
 void initialize_command_line() {
 	register_incoming_callback(&_build_command_buffer);
-	_print_command_prompt();
+	print_command_prompt();
 	add_command(&help_command);
 	add_command(&echo_back_command);
 }

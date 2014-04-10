@@ -10,4 +10,6 @@
 
 void initialize_command_line();
 
+void print_command_prompt();
+
 #endif /* COMMAND_LINE_H_ */

@@ -21,6 +21,7 @@
 #include "scheduler.h"
 #include "inttypes.h"
 #include "command_parse.h"
+#include "command_line.h"
 #include "logger.h"
 #include "serial.h"
 
@@ -42,7 +43,9 @@ void _calculate_avg_motor_speed();
 void _sample_motor_speed();
 void _sample_motor_velocity();
 void _log_status();
+void _check_interpolator_queue();
 
+ParseResult _iterpolate_function(char* params, void (*output_line)(char*));
 ParseResult _set_speed_function(char* params, void (*output_line)(char*));
 ParseResult _set_position_function(char* params, void (*output_line)(char*));
 ParseResult _toggle_logging_function(char* params, void (*output_line)(char*));
@@ -50,6 +53,10 @@ ParseResult _set_kp_function(char* params, void (*output_line)(char*));
 ParseResult _set_kd_function(char* params, void (*output_line)(char*));
 ParseResult _view_current_values_function(char* params, void (*output_line)(char*));
 ParseResult _set_pd_frequency_function(char* params, void (*output_line)(char*));
+ParseResult _set_pd_frequency_function(char* params, void (*output_line)(char*));
+
+Command interpolate_command = {.command = 'I', .alias = 'i',
+		.command_function = &_iterpolate_function, .help = "Execution Interpolator" };
 
 Command speed_command = {.command = 'S', .alias = 's',
 		.command_function = &_set_speed_function, .help = "Set the reference speed (counts/sec)" };
@@ -81,6 +88,9 @@ volatile Task sample_motor_velocity_task = { .period = 50, .interrupt_function =
 volatile Task log_status = { .period = 5, .interrupt_function =
 		&_log_status, .released = 0, .name = "Log the status of Pr, Pm, and T" };
 
+volatile Task check_interpolator_queue = { .period = 100, .interrupt_function =
+		&_check_interpolator_queue, .released = 0, .name = "Check (and execute) and tasks on the interpolator queue." };
+
 volatile double proportional_gain = 0.2;
 volatile double derivative_gain = 0.2;
 
@@ -99,10 +109,16 @@ volatile char is_logging = 0;
 
 volatile int16_t torque;
 
+#define MAX_INTERPOLATOR_QUEUE_SIZE 20
+volatile static char* interpolator_queue[MAX_INTERPOLATOR_QUEUE_SIZE];
+
+volatile int16_t interpolator_queue_delay = 0;
+
 void initialize_pd_controller() {
 	register_task(&pd_controller_task);
 	register_task(&log_status);
 	register_task(&sample_motor_velocity_task);
+	register_task(&check_interpolator_queue);
 
 	add_command(&speed_command);
 	add_command(&position_command);
@@ -111,10 +127,11 @@ void initialize_pd_controller() {
 	add_command(&set_kd_command);
 	add_command(&view_current_values_command);
 	add_command(&set_pd_frequency_command);
+	add_command(&interpolate_command);
 }
 
 ParseResult _toggle_logging_function(char* params, void (*output_line)(char*)) {
-	is_logging = ~is_logging;
+	is_logging = !is_logging;
 	if(is_logging) {
 		char c;
 		sscanf(params, "%c", &c);
@@ -294,6 +311,38 @@ void _sample_motor_velocity() {
 #endif
 }
 
+void _check_interpolator_queue() {
+	if(interpolator_queue_delay > 0) {
+		interpolator_queue_delay--;
+	} else {
+		char* command = (char*)interpolator_queue[0];
+		if(command != NULL) {
+			char c;
+			char args[50];
+			sscanf(command, "%c %s", &c, args);
+			if(c == 'w') {
+				interpolator_queue_delay = atoi(args);
+			} else {
+				parse_command(command);
+			}
+
+			interpolator_queue[0] = NULL;
+			free(command);
+			int i;
+			for(i=1;i<MAX_INTERPOLATOR_QUEUE_SIZE;i++) {
+				interpolator_queue[i-1] = interpolator_queue[i];
+				if(! interpolator_queue[i]) {
+					break;
+				}
+			}
+
+			if(! interpolator_queue[0]) {
+				print_command_prompt();
+			}
+		}
+	}
+}
+
 ParseResult _set_kp_function(char* params, void (*output_line)(char*)) {
 	proportional_gain = atof(params);
 	return COMMAND_PARSE_OK;
@@ -326,4 +375,26 @@ ParseResult _set_pd_frequency_function(char* params, void (*output_line)(char*))
 	sscanf(params, "%d", &i);
 	set_pd_controller_hz(i);
     return COMMAND_PARSE_OK;
+}
+
+ParseResult _iterpolate_function(char* params, void (*output_line)(char*)) {
+	const char s[2] = ",";
+	char* token = strtok(params, s);
+
+	cli();
+	int i = 0;
+	while(interpolator_queue[i] != NULL) {
+		i++;
+	}
+
+	while(token != NULL) {
+		char* tmp_str = (char*) malloc(strlen(token) + 1);
+		strcpy(tmp_str, token);
+		interpolator_queue[i] = tmp_str;
+		token = strtok(NULL, s);
+		i++;
+	}
+	sei();
+
+	return COMMAND_PARSE_OK;
 }
