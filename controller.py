@@ -189,9 +189,14 @@ params = {"F": 20, "Kp": 0.15, "Kd": 0.15}
 set_params(**params)
 plot_position_traverse(record_position_traverse(50), params, 50)
 """
-
+"""
 params = {"F": 20, "Kp": 0.15, "Kd": 0.25}
 set_params(**params)
 print plot_trajectory(record_trajectory("r120,w23,r0,w23,r20"), params)
+"""
+
+params = {"F": 50, "Kp": 0.5, "Kd": 0.2}
+set_params(**params)
+plot_position_traverse(record_position_traverse(50), params, 50)
 
 ser.close()
