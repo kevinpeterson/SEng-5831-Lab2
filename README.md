@@ -88,18 +88,32 @@ Determine optimally tuned values for the PD positional controller (i.e. those th
 
 #### Results
 
-![Kp0.35Kd0.25F50T.png](https://raw.githubusercontent.com/kevinpeterson/SEng-5831-Lab2/master/output/Kp0.35Kd0.25F50T.png)
+For the trajectory, the original intent was to hold position for .5 seconds after the desired position was reached. This turned out to be a problem as I experimented, as for some gain settings, the desired position was never reached (e.g., the motor would stop just below it). Because of this, I changed the 'hold' time to a finite 2.5 seconds -- so the trajectory was input as "move x, wait 2.5s, move x, wait 2.5s" etc.
 
-![Kp0.45Kd0.25F50T.png](https://raw.githubusercontent.com/kevinpeterson/SEng-5831-Lab2/master/output/Kp0.45Kd0.25F50T.png)
-
-![Kp0.3Kd0.2F50T.png](https://raw.githubusercontent.com/kevinpeterson/SEng-5831-Lab2/master/output/Kp0.3Kd0.2F50T.png)
-
-![Kp0.25Kd0.25F50T.png](https://raw.githubusercontent.com/kevinpeterson/SEng-5831-Lab2/master/output/Kp0.25Kd0.25F50T.png)
+First, I started with low values for Kp and Kd (0.2 for both). The motor was very stable and smooth, but slow. I never did reach the desired position in the allotted time. This would be ok if very smooth movement was needed, of if overshoot was bad for some reason... but I think for our purposes these values are not optimal.
 
 ![Kp0.2Kd0.2F50T.png](https://raw.githubusercontent.com/kevinpeterson/SEng-5831-Lab2/master/output/Kp0.2Kd0.2F50T.png)
 
 
-### 3. Trajectory (part two)
+To try to add some speed to the motor, I moved Kp up to 0.3. This helped rise time, and torque is shown to be much higher -- so to motor is receiving stronger signals, and the faster movement reflects that.
+
+![Kp0.3Kd0.2F50T.png](https://raw.githubusercontent.com/kevinpeterson/SEng-5831-Lab2/master/output/Kp0.3Kd0.2F50T.png)
+
+For comparision sake, I decreased Kp slightly and increased Kd slightly. I expected rise time to decrease slightly (which it did), and increasing Kd allowed the final trajectory position to be fully reached.
+
+![Kp0.25Kd0.25F50T.png](https://raw.githubusercontent.com/kevinpeterson/SEng-5831-Lab2/master/output/Kp0.25Kd0.25F50T.png)
+
+
+Kd seemed to be ok for the previous experiment (0.25), so I left that as-is. I still wanted to try to get some more motor speed in the movements, so I set Kp = 0.35 and Kd = 0.25. This was ok, but the motor moved slower than probably was necessary. To help speed things up, I will probably need to increase Kp.
+
+![Kp0.35Kd0.25F50T.png](https://raw.githubusercontent.com/kevinpeterson/SEng-5831-Lab2/master/output/Kp0.35Kd0.25F50T.png)
+
+
+Based on the last experiment, I increased Kp to 0.45 (while leaving Kd the same). After trying many different combinations, this seemed to give the best mix of speed and stability.
+
+![Kp0.45Kd0.25F50T.png](https://raw.githubusercontent.com/kevinpeterson/SEng-5831-Lab2/master/output/Kp0.45Kd0.25F50T.png)
+
+### 4. Trajectory (part two)
 Execute the same trajectory described above, except run your PD controller at 50Hz and then at 5Hz while graphing the same variables. Discuss the results.
 
 #### Results
