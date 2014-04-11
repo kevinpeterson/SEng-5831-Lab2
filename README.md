@@ -20,16 +20,24 @@ Implement the controller to maintain speed. The pieces to experiment with are th
 
 #### Results
 
-![Kp5.0Kd5.0F50S20.png](https://raw.githubusercontent.com/kevinpeterson/SEng-5831-Lab2/master/output/Kp5.0Kd5.0F50S20.png)
-
+I started with Kp and Kd being high (5.0 and 5.0), and attempted to rotate the wheel at 255 counts/sec (which is the max speed of the system). There was fast rise time and fairly minimal oscillation. The main observation was that the measured speed did not ever reach the desired speed. After some experimentation, I found that any setting over 240 counts/sec or so would give the same measured velocity, so I assume that I am hitting the max speed of the motor.
 ![Kp5.0Kd5.0F50S255.png](https://raw.githubusercontent.com/kevinpeterson/SEng-5831-Lab2/master/output/Kp5.0Kd5.0F50S255.png)
 
+
+Using the same values for Kp and Kd, I nexed tried to rotate the motor at 120 counts/sec. The motor oscillated out of control and quickly became unstable. Because of this, I tried lowering byt Kp and Kd to 0.5. The rise time was about the same as the above graph, but there was considerable overshoot an oscillation. It appears that Kp and Kd have different effects based on the motor speed.
 ![Kp0.5Kd0.5F50S120.png](https://raw.githubusercontent.com/kevinpeterson/SEng-5831-Lab2/master/output/Kp0.5Kd0.5F50S120.png)
 
+
+To account for the oscillation of the previous example, I tried lowering both Kp and Kd to 0.2. This seemed to help the oscillation, but the rise time was slower -- which makes sense, as Kp is not increasing the torque as aggressively as before.
 ![Kp0.2Kd0.2F50S120.png](https://raw.githubusercontent.com/kevinpeterson/SEng-5831-Lab2/master/output/Kp0.2Kd0.2F50S120.png)
 
+
+Next, I tried to operate the motor very slowly. The slowest speed I could achieve was around 10-20 counts/second. I could get it lower (around 8 counts/second was the absolute minimum), but it was very jerky. With both gains very low (both at 0.1), the rise time was slow, but speed seemed fairly stable. The graph indicates a lot of oscillation, but I think a large portion of that is inaccuracies of measuring velocity. When the motor is moving very slowly, it is much harder to get an accurate measurement of the velocity, because there are less counts happening in the measurement time period.
 ![Kp0.1Kd0.1F50S20.png](https://raw.githubusercontent.com/kevinpeterson/SEng-5831-Lab2/master/output/Kp0.1Kd0.1F50S20.png)
 
+
+For comparison sake, I used the same Kp and Kd values that I used for turning the motor at 255 counts/second to turn it at 20 counts/second. The result was large oscillation, and an uncontrollable system. There appears to be a large difference in how Kp and Kd behave when combined with motor speed.
+![Kp5.0Kd5.0F50S20.png](https://raw.githubusercontent.com/kevinpeterson/SEng-5831-Lab2/master/output/Kp5.0Kd5.0F50S20.png)
 
 ### 2. Position
 Implement the controller to maintain position. Using a good sampling rate, experiment with speed and range of reference position. Use high gains for positional control, so that the motor mostly runs at full speed. Observe the overshoot and see if you can adjust the gain to maintain both a high speed and not overshoot. Then use very low gains so that the motor runs very slowly. Observe for undershoot and see if you can adjust the gains to maintain both low speed and reach the target position. For each, record the measured position, measured speed, reference position, nd error; and record your gains. Graph the variables and describe and explain your findings.
