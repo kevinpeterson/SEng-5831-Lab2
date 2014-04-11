@@ -23,6 +23,9 @@ def turn_on_logging():
 def set_position(pos):
     _send_command('r'+str(pos))
 
+def execute_trajectory(trajectory):
+    _send_command('i'+str(trajectory))
+
 def set_speed(speed):
     _send_command('s'+str(speed))
 
@@ -48,6 +51,20 @@ def record_position_traverse(position):
     return buffer
 
 
+def record_trajectory(trajectory):
+    buffer = []
+    set_speed(0)
+    set_position(0)
+    time.sleep(4)
+    turn_on_logging()
+    execute_trajectory(trajectory)
+    buffer += read_serial(10)
+    turn_off_logging()
+    set_position(0)
+
+    return buffer
+
+
 def record_speed(speed):
     buffer = []
     set_speed(0)
@@ -61,9 +78,29 @@ def record_speed(speed):
 
     return buffer
 
+def plot_trajectory(buffer, params):
+    print buffer
+    Pr = [l.split(",")[0] for l in buffer]
+    Pm = [l.split(",")[1] for l in buffer]
+    T = [l.split(",")[4] for l in buffer]
+
+    fig = plt.figure()
+    plt.plot(Pr, label="Reference Position")
+    plt.plot(Pm, label="Measured Position")
+    plt.plot(T, label="Torque")
+    plt.xlabel("Time (x5 ms)")
+    plt.ylabel("Position (counts)")
+    plt.legend()
+    plt.title("Kp: %(Kp)s, Kd: %(Kd)s, Controller Period(ms): %(F)s" % params)
+    plt.ylim([0,140])
+    filename = "output/Kp%(Kp)sKd%(Kd)sF%(F)s" % params
+
+    plt.savefig(filename + "T.png")
+
+    plt.close(fig)
+
 
 def plot_position_traverse(buffer, params, position):
-    print buffer
     Pr = [l.split(",")[0] for l in buffer]
     Pm = [l.split(",")[1] for l in buffer]
     Vm = [l.split(",")[4] for l in buffer]
@@ -81,7 +118,6 @@ def plot_position_traverse(buffer, params, position):
 
     plt.savefig(filename + "P" + str(position) + ".png")
 
-    pp.savefig(fig)
     plt.close(fig)
 
 
@@ -101,7 +137,6 @@ def plot_speed(buffer, params, speed):
 
     plt.savefig(filename + "S" + str(speed) + ".png")
 
-    pp.savefig(fig)
     plt.close(fig)
 
 def set_params(Kp, Kd, F):
@@ -112,8 +147,6 @@ def set_params(Kp, Kd, F):
 
 _send_command('e-')
 flush_input()
-
-pp = PdfPages('figures.pdf')
 
 """
 params = {"F": 50, "Kp": 5.0, "Kd": 5.0}
@@ -157,6 +190,8 @@ set_params(**params)
 plot_position_traverse(record_position_traverse(50), params, 50)
 """
 
-pp.close()
+params = {"F": 20, "Kp": 0.15, "Kd": 0.25}
+set_params(**params)
+print plot_trajectory(record_trajectory("r120,w23,r0,w23,r20"), params)
 
 ser.close()
