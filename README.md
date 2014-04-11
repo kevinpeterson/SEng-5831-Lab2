@@ -50,7 +50,7 @@ Implement the controller to maintain position. Using a good sampling rate, exper
 
 #### Results
 
-The highest gain that was stable was Kp = 0.5 and Kd = 0.1. Note that the rise time was fast, but there was alot of oscillation. I hypothesis that this was because of the Kd value being low.
+The highest gain that was stable was Kp = 0.5 and Kd = 0.1. Note that the rise time was fast, but there was alot of oscillation. I hypothesize that this was because of the Kd value being low.
 
 ![Kp0.5Kd0.1F20P50.png](https://raw.githubusercontent.com/kevinpeterson/SEng-5831-Lab2/master/output/Kp0.5Kd0.1F20P50.png)
 
@@ -61,6 +61,8 @@ To check the above hypothesis, I set Kd = 0.4. This decreased oscillation to be 
 
 
 Next, I explored some different controller frequencies -- 20 Khz and 50 Khz. There was some differences between results, but overall, they were comparable. Interestingly, going much outside this range led to the system becoming quicky unstable
+
+The following are various settings of both 20 Khz and 50 Khz.
 
 ![Kp0.5Kd0.2F50P50.png](https://raw.githubusercontent.com/kevinpeterson/SEng-5831-Lab2/master/output/Kp0.5Kd0.2F50P50.png)
 
@@ -118,11 +120,22 @@ Execute the same trajectory described above, except run your PD controller at 50
 
 #### Results
 
+First, I set the controller to 5Hz. The system quickly becaome unstable. Notice that in the graph below, the Measured Position at times has a saw-tooth pattern. This is because the position is moving from 127 (which is the max) to 0. The measured position resets to 0 at 128, which is why that pattern is seen. Basically, be means that the motor was continuing to spin instead of stopping at the desired position. I assume this is because the the controller is operating slowing and it has to make much coarser-grained movements. The velocity messurement would also be a problem, as in the time of 5Hz, the velocity is not necessarily constant -- it may be increasing or decreasing during that time. This is problematic because the controller will only act on the last know velocity. The alternative is to average the velocity over the time span, but this is problematic also, as this will make velocity appear constant for each interval between controler cycles, with a moment of instantaneous velocity change as the new average is calculated.
+
 ![Kp0.45Kd0.25F200T.png](https://raw.githubusercontent.com/kevinpeterson/SEng-5831-Lab2/master/output/Kp0.45Kd0.25F200T.png)
 
+Conversely, speeding up controller frequency (to 50Hz) caused the system to become unstable due to oscillation. I assume that this is due to the fact that we cannot measure velocity precisely enough at that speed to accurately inform controller decisions. If velocity could be measured with more precision, I think a higher controller frequency would be helpful -- but as shown, currently it degrades system performance.
 
 ![Kp0.15Kd0.25F20T.png](https://raw.githubusercontent.com/kevinpeterson/SEng-5831-Lab2/master/output/Kp0.15Kd0.25F20T.png)
 
 
+Discussion
+----------
+Adjusting Kp for the most part had the expected effect -- the motor responded faster, whether that be moving to a new set position, or a new speed. I found that the range I could set it to was smaller than I expected, as moving it too much caused the system to become unstable.
 
+Kd did have some positve effects on settling time, but it was hard to predict what effect it would have. When tuning this, it was important to consider what Kd was, what the desired speed was, or how far the motor was moving (if moving to set positions). Because of this it was hard to tune this constant correctly.
+
+System instability was a problem -- as moving the values of the constants too much would cause so much oscillation that the system would reset itself. I looked into this, and it seems that I was hitting a "brownout" reset, or too much current being drawn through the motor while it is trying to keep up. I wonder how systems deal with this, as it was quite hard to tune the controller to have good response in all possible situations, and I'm sure that most systems can't afford to become so unstable that they reset. I suppose there are checks and balances to this... it would be interesting to see how that is done.
+
+I struggled the most with measuring velocity. I tried averaging several previous results, but this led to sluggish behavior. I assume that it was because the more averaging is done, the more old, outdated data is included in decision. I tried a sliding window, where I populated a rotating ring buffer, and always read head and tail of the buffer queue -- but this wasn't much better, and it was difficult to do this correctly as the controller changed frequency. I tried measuing system time between encoder interrupts. I could measure velocity very accurately then, but that had challenges as well. I implemented this as when a encoder interrupt happened, I would store the system clock time (in microseconds), an then when the next interrupt happened I would subtract the stored time with the current time. I would then know that 1 count was traversed in N microseconds. The problem was that often when the motor was stopping, there would be an encoder interrupt, and then the motor would stop, and I would never have the next interrupt (and time) to compare it to. I'm sure there would be a way to implement this, but it wasn't straightforward. Plus, there were lots of floating point calculations and divisions to normalize the velocity to counts/second, which seemed problematic. In the end, I went with a simple polling strategy -- at a constant rate I compared motor position with previous position. This was simple, and worked (for the most part). Overall, velocity was a challenge, and it showed in some of the instabillity that I saw.
 
