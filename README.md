@@ -23,14 +23,14 @@ Structure
 
 **scheduler.c/h** - A simple non-preemptive task scheduler.
 
-**neural_net.c** - An attempt to apply machine learing to the PD controller. Currently not functional and not included in the build. See [here](#explorations) for more inforation.
+**neural_net.c** - An attempt to apply machine learing to the PD controller. Currently not functional and not included in the build. See [here](#explorations) for more information.
 
 **controller.py** - A Python interface into the system using the serial interface. This was used to conduct the experiments and to plot the graphs.
 
 
 
-Variables
----------
+Variable Definitions
+--------------------
 * T = Output motor signal (torque)
 * Pr = Desired motor position or speed
 * Pm = Current motor position or speed
