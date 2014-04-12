@@ -1,6 +1,34 @@
 Lab Assignment 2 : PD Motor Control
 ===================================
 
+
+Structure
+---------
+
+**lab2.c/h** - Where the cyclic executive is, and where the various experiment conditions are set.
+
+**logger.c/h** - Logging/debug functionality (printing to the LCD).
+
+**motor.c/h** - Basic motor control functionality.
+
+**motor_encoder.c/h** - An interface used to read motor counts via an encoder.
+
+**pd_controller.c/h** - A Proportional Derivative motor controller.
+
+**command_line.c/h** - A command line user interface using serial commands
+
+**command_parse.c/h** - A command registration component that allows new command line commands to be registered in the system. This component is inspired by the Python argparse library - http://docs.python.org/3.4/library/argparse.html
+
+**serial.c/h** - Centrailized serial communication functionality.
+
+**scheduler.c/h** - A simple non-preemptive task scheduler.
+
+**neural_net.c** - An attempt to apply machine learing to the PD controller. Currently not functional and not included in the build. See [here](#explorations) for more inforation.
+
+**controller.py** - A Python interface into the system using the serial interface. This was used to conduct the experiments and to plot the graphs.
+
+
+
 Variables
 ---------
 * T = Output motor signal (torque)
@@ -139,3 +167,9 @@ System instability was a problem -- as moving the values of the constants too mu
 
 I struggled the most with measuring velocity. I tried averaging several previous results, but this led to sluggish behavior. I assume that it was because the more averaging is done, the more old, outdated data is included in decision. I tried a sliding window, where I populated a rotating ring buffer, and always read head and tail of the buffer queue -- but this wasn't much better, and it was difficult to do this correctly as the controller changed frequency. I tried measuing system time between encoder interrupts. I could measure velocity very accurately then, but that had challenges as well. I implemented this as when a encoder interrupt happened, I would store the system clock time (in microseconds), an then when the next interrupt happened I would subtract the stored time with the current time. I would then know that 1 count was traversed in N microseconds. The problem was that often when the motor was stopping, there would be an encoder interrupt, and then the motor would stop, and I would never have the next interrupt (and time) to compare it to. I'm sure there would be a way to implement this, but it wasn't straightforward. Plus, there were lots of floating point calculations and divisions to normalize the velocity to counts/second, which seemed problematic. In the end, I went with a simple polling strategy -- at a constant rate I compared motor position with previous position. This was simple, and worked (for the most part). Overall, velocity was a challenge, and it showed in some of the instabillity that I saw.
 
+
+<a name="explorations"></a>A little off topic...
+------------------------------------------------
+I thought it would be interesting for the system to 'learn' what the optimal values of Kp and Kd were, instead of trying to guess. My idea was to incorporate a neural network into the system, where optial Kp and Kd values could be found by trying values and feeding them back into the system, learning as time went on.
+
+In short, I never quite got it to work. It did seem promising, however. I think this is an interesting application of some sort of learning algorithm. There is some code in ```neural_net.c``` -- but don't expect it to work correctly. I used http://galaxy.agh.edu.pl/~vlsi/AI/backp_t_en/backprop.html as a reference, along with quite a few papers on the topic. It is pretty interesting stuff... anyway, as I said, a little off topic.
