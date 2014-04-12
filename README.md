@@ -42,17 +42,20 @@ Variable Definitions
 
 Command Line UI Controls
 ------------------------
+
+The system uses a serial command line interface for user interaction. The following commands are available:
 ```
 h - Display the help menu.
 e - Toggle serial echo back.
-S/s - Set the reference speed (counts/sec)
-R/r - Set the reference position
+S/s - Set the reference speed (counts/sec) - ex. s90
+R/r - Set the reference position - ex. r45
 L/l - Toggle logging of Pr, Pm, and T
-P/p - Set Kp
-D/d - Set Kd
+P/p - Set Kp - ex. p0.2
+D/d - Set Kd - ex. d0.15
 V/v - View the current values Kd, Kp, Vm, Pr, Pm, and T
-F/f - Set the PD Controller frequency (in ms period)
-I/i - Execution Interpolator
+F/f - Set the PD Controller frequency (in ms period) - ex. f200
+I/i - Execution Interpolator ex. is90,w10,s0
+NOTE: The interpolator can accept a comma-delimited series of any of the above commands, with the addition of a "wait" (w) command. This pauses the interpoloator for a time (x 100ms).
 ```
 
 Deliverables
