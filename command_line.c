@@ -1,8 +1,5 @@
 /*
- * command_line.c
- *
- *  Created on: Mar 29, 2014
- *      Author: m005256
+ * The command line UI functionality.
  */
 #include <pololu/orangutan.h>
 #include <stdio.h>
@@ -26,6 +23,10 @@ static volatile char echo_back = 1;
 unsigned char command_buffer_position;
 char command_buffer[32];
 
+
+/**
+ * Gather up all the registered commands and display their help message.
+ */
 ParseResult help_function(char* params, void (*output_line)(char*)) {
 	CommandNode* n = get_all_commands();
 	while(n != NULL) {
@@ -73,7 +74,10 @@ void initialize_command_line() {
 	add_command(&echo_back_command);
 }
 
-
+/**
+ * Toggle whether or not to echo back the command to the client. Useful if you want
+ * to run in 'silent' mode, such as when logging.
+ */
 ParseResult _toggle_echo_back_function(char* params, void (*output_line)(char*)) {
 	char c;
 	sscanf(params, "%c", &c);
