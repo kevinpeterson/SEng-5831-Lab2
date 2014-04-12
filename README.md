@@ -117,7 +117,7 @@ The following are various settings of both 20 Hz and 50 Hz.
 
 ![Kp0.4Kd0.1F50P50.png](https://raw.githubusercontent.com/kevinpeterson/SEng-5831-Lab2/master/output/Kp0.4Kd0.1F50P50.png)
 
-Compare the above and below graphs. 20 Hz (above) was more stable, and 50 Hz (below) began to show signs of oscillation and system instability.
+Compare the above and below graphs. 20 Hz (above) and 50 Hz (below), both with equal values of Kp and Kd. They appear to be similar, but the 50 Hz example is "compressed" --meaning, the same overshoot and oscillations are happening, just in a shorter time frame. This makes sense -- the controller making the same decisions based on the same constants, but in shorter periods of time in teh 50 Hz example.
 
 ![Kp0.4Kd0.1F20P50.png](https://raw.githubusercontent.com/kevinpeterson/SEng-5831-Lab2/master/output/Kp0.4Kd0.1F20P50.png)
 
