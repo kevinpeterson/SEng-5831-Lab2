@@ -109,19 +109,19 @@ To check the above hypothesis, I set Kd = 0.4. This decreased oscillation to be 
 ![Kp0.4Kd0.4F50P50.png](https://raw.githubusercontent.com/kevinpeterson/SEng-5831-Lab2/master/output/Kp0.4Kd0.4F50P50.png)
 
 
-Next, I explored some different controller frequencies -- 20 Khz and 50 Khz. There was some differences between results, but overall, they were comparable. Interestingly, going much outside this range led to the system becoming quicky unstable.
+Next, I explored some different controller frequencies -- 20 Hz and 50 Hz. There was some differences between results, but overall, they were comparable. Interestingly, going much outside this range led to the system becoming quicky unstable.
 
-The following are various settings of both 20 Khz and 50 Khz.
+The following are various settings of both 20 Hz and 50 Hz.
 
 ![Kp0.5Kd0.2F50P50.png](https://raw.githubusercontent.com/kevinpeterson/SEng-5831-Lab2/master/output/Kp0.5Kd0.2F50P50.png)
 
 ![Kp0.4Kd0.1F50P50.png](https://raw.githubusercontent.com/kevinpeterson/SEng-5831-Lab2/master/output/Kp0.4Kd0.1F50P50.png)
 
-
-![Kp0.2Kd0.2F50P50.png](https://raw.githubusercontent.com/kevinpeterson/SEng-5831-Lab2/master/output/Kp0.2Kd0.2F50P50.png)
+Compare the above and below graphs. 20 Hz (above) was more stable, and 50 Hz (below) began to show signs of oscillation and system instability.
 
 ![Kp0.4Kd0.1F20P50.png](https://raw.githubusercontent.com/kevinpeterson/SEng-5831-Lab2/master/output/Kp0.4Kd0.1F20P50.png)
 
+![Kp0.2Kd0.2F50P50.png](https://raw.githubusercontent.com/kevinpeterson/SEng-5831-Lab2/master/output/Kp0.2Kd0.2F50P50.png)
 
 ![Kp0.25Kd0.1F20P50.png](https://raw.githubusercontent.com/kevinpeterson/SEng-5831-Lab2/master/output/Kp0.25Kd0.1F20P50.png)
 
