@@ -2,8 +2,8 @@ Lab Assignment 2 : PD Motor Control
 ===================================
 
 
-Structure
----------
+Project Structure
+-----------------
 
 **lab2.c/h** - Where the cyclic executive is, and where the various experiment conditions are set.
 
@@ -38,6 +38,22 @@ Variable Definitions
 * Vm = Current motor velocity
 * Kp = Proportional gain
 * Kd = Derivative gain
+
+
+Command Line UI Controls
+------------------------
+'''
+h - Display the help menu.
+e - Toggle serial echo back.
+S/s - Set the reference speed (counts/sec)
+R/r - Set the reference position
+L/l - Toggle logging of Pr, Pm, and T
+P/p - Set Kp
+D/d - Set Kd
+V/v - View the current values Kd, Kp, Vm, Pr, Pm, and T
+F/f - Set the PD Controller frequency (in ms period)
+I/i - Execution Interpolator
+'''
 
 Deliverables
 ------------
