@@ -94,7 +94,7 @@ Command set_pd_frequency_command = {.command = 'F', .alias = 'f',
 
 
 // Register various scheduled tasks to run.
-volatile Task pd_controller_task = { .period = 20, .interrupt_function =
+volatile Task pd_controller_task = { .period = 50, .interrupt_function =
 		&_pd_controller_cycle, .released = 0, .name = "Cycle the PD Controller Task" };
 
 volatile Task sample_motor_velocity_task = { .period = 50, .interrupt_function =
