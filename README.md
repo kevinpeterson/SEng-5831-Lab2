@@ -55,7 +55,9 @@ D/d - Set Kd - ex. d0.15
 V/v - View the current values Kd, Kp, Vm, Pr, Pm, and T
 F/f - Set the PD Controller frequency (in ms period) - ex. f200
 I/i - Execution Interpolator ex. is90,w10,s0
-NOTE: The interpolator can accept a comma-delimited series of any of the above commands, with the addition of a "wait" (w) command. This pauses the interpoloator for a time (x 100ms).
+* NOTE: The interpolator can accept a comma-delimited series of any 
+  of the above commands, with the addition of a "wait" (w) command. 
+  This pauses the interpoloator for a time (x 100ms).
 ```
 
 Deliverables
