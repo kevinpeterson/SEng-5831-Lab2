@@ -42,7 +42,7 @@ Variable Definitions
 
 Command Line UI Controls
 ------------------------
-'''
+```
 h - Display the help menu.
 e - Toggle serial echo back.
 S/s - Set the reference speed (counts/sec)
@@ -53,7 +53,7 @@ D/d - Set Kd
 V/v - View the current values Kd, Kp, Vm, Pr, Pm, and T
 F/f - Set the PD Controller frequency (in ms period)
 I/i - Execution Interpolator
-'''
+```
 
 Deliverables
 ------------
