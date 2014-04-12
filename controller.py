@@ -1,3 +1,8 @@
+"""
+A python-based controller to execute various lab2 commands
+via a serial interface.
+"""
+
 import serial
 import time
 import matplotlib.pyplot as plt

@@ -1,6 +1,3 @@
-/**
- * A linked-list of callback functions.
- */
 #include <pololu/orangutan.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -8,6 +5,9 @@
 #include "command_parse.h"
 #include "serial.h"
 
+/**
+ * A linked-list of callback functions.
+ */
 CommandNode* command_list = NULL;
 
 void add_command(Command* command) {
@@ -38,6 +38,9 @@ void _send_line_to_serial(char* line) {
 	serial_to_send("\r\n", 2);
 }
 
+/**
+ * Parse and execute a char command.
+ */
 void parse_command(char* command) {
 	CommandNode* n = command_list;
 	char c;

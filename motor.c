@@ -1,3 +1,6 @@
+/**
+ * Motor control functionality.
+ */
 #include <pololu/orangutan.h>
 #include <avr/io.h>
 #include <stdlib.h>
@@ -50,6 +53,9 @@ void _stop_timer() {
 	transition_motor_wait = 0;
 }
 
+/**
+ * Change direction on a negative value.
+ */
 int16_t _calculate_signed_speed_value() {
 	if(PORTC & _BV(6)) {
 		return -OCR2B;
@@ -71,6 +77,9 @@ void set_motor_speed(int16_t speed) {
 
 	int16_t signed_speed_value = _calculate_signed_speed_value();
 
+	// This is an attempt to prevent brownout resets. I found that if there are large
+	// changes in speed, the board would reset. This tries to break up large changes into
+	// smaller ones.
 	if(speed_change > MAX_SPEED_CHANGE) {
 		_start_timer();
 		if(signed_speed_value - speed < 0) {

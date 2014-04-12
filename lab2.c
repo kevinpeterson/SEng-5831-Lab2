@@ -9,7 +9,6 @@
 #include <string.h>
 #include <util/delay.h>
 
-
 #include "scheduler.h"
 #include "motor.h"
 #include "command_line.h"
@@ -20,10 +19,7 @@
 
 
 #ifdef WELCOME_MSG
-/**
- * A quite unnecessary welcome screen display.
- * I wanted to learn some pointer math...
- */
+
 void print_welcome_message() {
 	char* msg = "Kevin's Lab 2";
 	int8_t i = -strlen(msg);
@@ -47,9 +43,16 @@ void print_welcome_message() {
 #endif
 
 
+/**
+ * There isn't much in this file... it initializes things and launches the
+ * tasks that the scheduler schedules.
+ *
+ * Most of the interesting stuff is in pd_controller.c, motor.c, etc...
+ */
 int main(void) {
 	clear();
 
+	// intitialize things
 	initialize_scheduler();
 	initialize_serial();
 	initialize_command_line();
@@ -62,11 +65,9 @@ int main(void) {
 	print("Starting...");
 	delay_ms(500);
 	clear();
+
 	while(1) {
-		//set_m2_speed(-100);
-		//delay_ms(1000);
-		//set_m2_speed(-255);
-		//delay_ms(1000);
+		// release tasks
 		release_ready_tasks();
 	}
 

@@ -1,3 +1,24 @@
+/**
+ * An attempt to 'train' the system to learn optimal values for
+ * Kp and Kd.
+ *
+ * NOTE: This is not included in the build, and does not really work...
+ * There are a few problems:
+ * 	1) I don't really know anything about neural networks (but that hasn't stopped
+ * 		me in the past!). But I did learn quite a bit -- interesting stuff. I think
+ * 		I have the general idea...
+ * 	2) For training the system, I don't know how we would accurately determine controller
+ * 		performance. For example, how do you quantify oscillation? I'm sure you can... probably.
+ *
+ *	I think some way of 'learning' Kp and Kd would be neat -- either by some sort
+ *	of rules-bases system, or machine learning type stuff.
+ *
+ * 	Anyway, I wanted to get this working... but not quite.
+ *
+ *
+ * 	Data structures and algorithms based on:
+ * 	http://galaxy.agh.edu.pl/~vlsi/AI/backp_t_en/backprop.html
+ */
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>

@@ -58,6 +58,9 @@ ISR(PCINT0_vect) {
 		wheel_counter++;
 	}
 /*
+ 	 This was an attempt to measure velocity in terms of system clock time.
+ 	 It didn't work very well... see the writeup for more information.
+
 	if(! reversed) {
 		unsigned long ticks = get_ticks();
 		unsigned long elapsed_time_us = ticks_to_microseconds(ticks - prev_ticks);

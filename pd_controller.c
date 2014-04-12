@@ -1,4 +1,7 @@
 /*
+    A Proportional/Derivative controller.
+
+
     T = Output motor signal (torque)
     Pr = Desired motor position or speed
     Pm = Current motor position or speed
@@ -45,6 +48,7 @@ void _sample_motor_velocity();
 void _log_status();
 void _check_interpolator_queue();
 
+// Register all the command line commands used by this component (there are a lot...)
 ParseResult _iterpolate_function(char* params, void (*output_line)(char*));
 ParseResult _set_speed_function(char* params, void (*output_line)(char*));
 ParseResult _set_position_function(char* params, void (*output_line)(char*));
@@ -55,30 +59,41 @@ ParseResult _view_current_values_function(char* params, void (*output_line)(char
 ParseResult _set_pd_frequency_function(char* params, void (*output_line)(char*));
 ParseResult _set_pd_frequency_function(char* params, void (*output_line)(char*));
 
+
+// execute a interpolator command script
 Command interpolate_command = {.command = 'I', .alias = 'i',
 		.command_function = &_iterpolate_function, .help = "Execution Interpolator" };
 
+// change the motor speed
 Command speed_command = {.command = 'S', .alias = 's',
 		.command_function = &_set_speed_function, .help = "Set the reference speed (counts/sec)" };
 
+// change the motor position
 Command position_command = {.command = 'R', .alias = 'r',
 		.command_function = &_set_position_function, .help = "Set the reference position" };
 
+// toggle logging
 Command toggle_logging_command = {.command = 'L', .alias = 'l',
 		.command_function = &_toggle_logging_function, .help = "Toggle logging of Pr, Pm, and T" };
 
+// change Kp
 Command set_kp_command = {.command = 'P', .alias = 'p',
 		.command_function = &_set_kp_function, .help = "Set Kp" };
 
+// change Kd
 Command set_kd_command = {.command = 'D', .alias = 'd',
 		.command_function = &_set_kd_function, .help = "Set Kd" };
 
+// view current config values
 Command view_current_values_command = {.command = 'V', .alias = 'v',
 		.command_function = &_view_current_values_function, .help = "View the current values Kd, Kp, Vm, Pr, Pm, and T" };
 
+// set the controller frequency
 Command set_pd_frequency_command = {.command = 'F', .alias = 'f',
 		.command_function = &_set_pd_frequency_function, .help = "Set the PD Controller frequency (in ms period)" };
 
+
+// Register various scheduled tasks to run.
 volatile Task pd_controller_task = { .period = 20, .interrupt_function =
 		&_pd_controller_cycle, .released = 0, .name = "Cycle the PD Controller Task" };
 
@@ -114,6 +129,8 @@ volatile static char* interpolator_queue[MAX_INTERPOLATOR_QUEUE_SIZE];
 
 volatile int16_t interpolator_queue_delay = 0;
 
+
+// Register, intitialize, and setup.
 void initialize_pd_controller() {
 	register_task(&pd_controller_task);
 	register_task(&log_status);
@@ -130,6 +147,10 @@ void initialize_pd_controller() {
 	add_command(&interpolate_command);
 }
 
+
+/**
+ * Toggle logging on/off.
+ */
 ParseResult _toggle_logging_function(char* params, void (*output_line)(char*)) {
 	is_logging = !is_logging;
 	if(is_logging) {
@@ -148,6 +169,7 @@ void set_speed(int16_t speed) {
 	desired_speed = speed;
 }
 
+// Make sure the position is always in range.
 uint8_t _normalize_position(uint8_t position) {
 	if(position > 127) {
 		position = 127;
@@ -168,6 +190,8 @@ void set_derivative_gain(uint8_t gain) {
 	derivative_gain = gain;
 }
 
+
+// adjust the PD controller frequency.
 void set_pd_controller_hz(uint16_t hz) {
 	if(hz != pd_controller_task.period) {
 		pd_controller_task.period = hz;
@@ -175,6 +199,7 @@ void set_pd_controller_hz(uint16_t hz) {
 	}
 }
 
+// keep the torque value in range
 int16_t _normalize_torque(int16_t _torque) {
 	if(_torque > 255) {
 		_torque = 255;
@@ -185,6 +210,8 @@ int16_t _normalize_torque(int16_t _torque) {
 	return _torque;
 }
 
+
+// get the current motor position (using the encoder functionality).
 int32_t _sample_motor_position() {
 	return get_encoder_count() % 128;
 }
@@ -224,7 +251,11 @@ void _calculate_speed_torque() {
 	torque = _normalize_torque(torque + _torque);
 }
 
-
+/**
+ * Called during each controller cycle. This executes a change is speed or position,
+ * depending on the 'mode.' Mode is equal to the last thing that was requested -- so
+ * if the last command was a change in speed, we go to 'SPEED' mode, and vice versa.
+ */
 void _pd_controller_cycle() {
 	if(! controller_mode) {
 		return;
@@ -284,6 +315,11 @@ void _log_status() {
 	}
 }
 
+/**
+ * Sample the motor velocity by averaging previous sampling values. This
+ * is somewhat accurate, but... not accuracy degrades, especially as the
+ * motor is moving slowly.
+ */
 void _sample_motor_velocity() {
 	int32_t current_count = get_encoder_count();
 
@@ -311,6 +347,11 @@ void _sample_motor_velocity() {
 #endif
 }
 
+/**
+ * The interpolator executes a script of movements. Some of those movements can
+ * be 'wait' commands. We don't want to busy-wait -- so we put the commands on a
+ * queue and pull them off via an interrupt -- and schedule waiting time via that.
+ */
 void _check_interpolator_queue() {
 	if(interpolator_queue_delay > 0) {
 		interpolator_queue_delay--;
@@ -343,11 +384,17 @@ void _check_interpolator_queue() {
 	}
 }
 
+/**
+ * Fires when the Kp command line command is executed.
+ */
 ParseResult _set_kp_function(char* params, void (*output_line)(char*)) {
 	proportional_gain = atof(params);
 	return COMMAND_PARSE_OK;
 }
 
+/**
+ * Fires when the Kd command line command is executed.
+ */
 ParseResult _set_kd_function(char* params, void (*output_line)(char*)) {
 	derivative_gain = atof(params);
 	return COMMAND_PARSE_OK;
@@ -377,6 +424,12 @@ ParseResult _set_pd_frequency_function(char* params, void (*output_line)(char*))
     return COMMAND_PARSE_OK;
 }
 
+
+/**
+ * Parse the incoming interpolation script. Note that this does not execute
+ * the commands right away, but puts them on a queue to be executed via a timer.
+ * This allows us to introduce delays without busy waiting.
+ */
 ParseResult _iterpolate_function(char* params, void (*output_line)(char*)) {
 	const char s[2] = ",";
 	char* token = strtok(params, s);
