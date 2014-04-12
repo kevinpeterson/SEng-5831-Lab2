@@ -74,7 +74,7 @@ I started with Kp and Kd being high (5.0 and 5.0), and attempted to rotate the w
 ![Kp5.0Kd5.0F50S255.png](https://raw.githubusercontent.com/kevinpeterson/SEng-5831-Lab2/master/output/Kp5.0Kd5.0F50S255.png)
 
 
-Using the same values for Kp and Kd, I nexted tried to rotate the motor at 120 counts/sec. The motor oscillated out of control and quickly became unstable. Because of this, I tried lowering byt Kp and Kd to 0.5. The rise time was about the same as the above graph, but there was considerable overshoot and oscillation. It appears that Kp and Kd have different effects based on the motor speed.
+Using the same values for Kp and Kd, I nexted tried to rotate the motor at 120 counts/sec. The motor oscillated out of control and quickly became unstable. Because of this, I tried lowering both Kp and Kd to 0.5. The rise time was about the same as the above graph, but there was considerable overshoot and oscillation. It appears that Kp and Kd have different effects based on the motor speed.
 
 ![Kp0.5Kd0.5F50S120.png](https://raw.githubusercontent.com/kevinpeterson/SEng-5831-Lab2/master/output/Kp0.5Kd0.5F50S120.png)
 
